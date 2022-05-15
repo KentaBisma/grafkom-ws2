@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<div>
+sheep front left thigh -180 <input id="slider1" type="range"
+ min="-180" max="180" step="10" value="0"
+  />
+ 180
+</div><br/>
+
+<div>
+sheep front left calf arm angle -180 <input id="slider2" type="range"
+ min="-180" max="180" step="10" value="0"
+  />
+ 180
+</div><br/>
+
+<div>
+sheep front right thigh arm angle -180 <input id="slider3" type="range"
+ min="-180" max="180" step="10" value="0"
+  />
+ 180
+</div><br/>
+
+<div>
+sheep front right calf angle -180 <input id="slider4" type="range"
+ min="-180" max="180" step="10" value="0"
+  />
+ 180
+</div><br/>
+
+<div>
+sheep back left thigh angle -180 <input id="slider5" type="range"
+ min="-180" max="180" step="10" value="0"
+  />
+ 180
+</div><br/>
+
+<div>
+sheep back left calf arm angle -180 <input id="slider6" type="range"
+ min="-180" max="180" step="10" value="0"
+  />
+ 180
+</div><br/>
+
+<div>
+sheep back right thigh angle -180 <input id="slider7" type="range"
+ min="-180" max="180" step="10" value="0"
+  />
+ 180
+</div><br/>
+
+<div>
+sheep back right calf angle -180 <input id="slider8" type="range"
+ min="-180" max="180" step="10" value="0"
+  />
+ 180
+</div><br/>
+
+<div>
+man left upper arm angle -180 <input id="slider9" type="range"
+ min="-180" max="180" step="10" value="0"
+  />
+ 180
+</div><br/>
+
+<div>
+man left lower arm angle -180 <input id="slider10" type="range"
+ min="-180" max="180" step="10" value="0"
+  />
+ 180
+</div><br/>
+
+<div>
+man right upper arm arm angle -180 <input id="slider11" type="range"
+ min="-180" max="180" step="10" value="0"
+  />
+ 180
+</div><br/>
+
+<div>
+man right lower arm arm angle -180 <input id="slider12" type="range"
+ min="-180" max="180" step="10" value="0"
+  />
+ 180
+</div><br/>
+
+<div>
+man left thigh angle -180 <input id="slider13" type="range"
+ min="-180" max="180" step="10" value="0"
+  />
+ 180
+</div><br/>
+
+<div>
+man left calf angle -180 <input id="slider14" type="range"
+ min="-180" max="180" step="10" value="0"
+  />
+ 180
+</div><br/>
+
+<div>
+man right thigh angle -180 <input id="slider15" type="range"
+ min="-180" max="180" step="10" value="0"
+  />
+ 180
+</div><br/>
+
+<div>
+man right calf angle -180 <input id="slider16" type="range"
+ min="-180" max="180" step="10" value="0"
+  />
+ 180
+</div><br/>
+
+<canvas id="gl-canvas" width="512" height="512"> </canvas>
+<script id="vertex-shader" type="x-shader/x-vertex">
+#version 300 es
+
+in vec4 aPosition;
+in vec4 aColor;
+out vec4 vColor;
+
+uniform mat4 modelViewMatrix;
+uniform mat4 projectionMatrix;
+
+void main()
+{
+    vColor = aColor;
+    gl_Position = projectionMatrix * modelViewMatrix * aPosition;
+}
+</script>
+
+<script id="fragment-shader" type="x-shader/x-fragment">
+#version 300 es
+
+precision mediump float;
+
+in vec4 vColor;
+out vec4 fColor;
+
+void main()
+{
+    fColor = vColor;
+}
+</script>
+
+<script src="../Common/initShaders.js"></script>
+<script src="../Common/MVnew.js"></script>
+<script src="utils.js"></script>
+<script src="robotArm.js"></script>
+
+
+</body>
+</html>
