@@ -51,7 +51,7 @@ var LowerArm = 1;
 var UpperArm = 2;
 
 
-var theta = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+var theta = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
 var angle = 0;
 
@@ -136,53 +136,59 @@ function init() {
     gl.vertexAttribPointer(colorLoc, 4, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(colorLoc);
 
-    document.getElementById("slider1").onchange = function (event) {
+    document.getElementById("slider0").onchange = function (event) {
         theta[0] = event.target.value;
     };
-    document.getElementById("slider2").onchange = function (event) {
+    document.getElementById("slider1").onchange = function (event) {
         theta[1] = event.target.value;
     };
-    document.getElementById("slider3").onchange = function (event) {
+    document.getElementById("slider2").onchange = function (event) {
         theta[2] = event.target.value;
     };
-    document.getElementById("slider4").onchange = function (event) {
+    document.getElementById("slider3").onchange = function (event) {
         theta[3] = event.target.value;
     };
-    document.getElementById("slider5").onchange = function (event) {
+    document.getElementById("slider4").onchange = function (event) {
         theta[4] = event.target.value;
     };
-    document.getElementById("slider6").onchange = function (event) {
+    document.getElementById("slider5").onchange = function (event) {
         theta[5] = event.target.value;
     };
-    document.getElementById("slider7").onchange = function (event) {
+    document.getElementById("slider6").onchange = function (event) {
         theta[6] = event.target.value;
     };
-    document.getElementById("slider8").onchange = function (event) {
+    document.getElementById("slider7").onchange = function (event) {
         theta[7] = event.target.value;
     };
-    document.getElementById("slider9").onchange = function (event) {
+    document.getElementById("slider8").onchange = function (event) {
         theta[8] = event.target.value;
     };
-    document.getElementById("slider10").onchange = function (event) {
+    document.getElementById("slider9").onchange = function (event) {
         theta[9] = event.target.value;
     };
-    document.getElementById("slider11").onchange = function (event) {
+    document.getElementById("slider10").onchange = function (event) {
         theta[10] = event.target.value;
     };
-    document.getElementById("slider12").onchange = function (event) {
+    document.getElementById("slider11").onchange = function (event) {
         theta[11] = event.target.value;
     };
-    document.getElementById("slider13").onchange = function (event) {
+    document.getElementById("slider12").onchange = function (event) {
         theta[12] = event.target.value;
     };
-    document.getElementById("slider14").onchange = function (event) {
+    document.getElementById("slider13").onchange = function (event) {
         theta[13] = event.target.value;
     };
-    document.getElementById("slider15").onchange = function (event) {
+    document.getElementById("slider14").onchange = function (event) {
         theta[14] = event.target.value;
     };
-    document.getElementById("slider16").onchange = function (event) {
+    document.getElementById("slider15").onchange = function (event) {
         theta[15] = event.target.value;
+    };
+    document.getElementById("slider16").onchange = function (event) {
+        theta[16] = event.target.value;
+    };
+    document.getElementById("slider17").onchange = function (event) {
+        theta[17] = event.target.value;
     };
 
     modelViewMatrixLoc = gl.getUniformLocation(program, "modelViewMatrix");
@@ -259,14 +265,15 @@ function render() {
     modelViewMatrix = rotate(theta[Base], vec3(0, 1, 0));
     base(modelViewMatrix);
 
-    modelViewMatrix = mult(modelViewMatrix, translate(0.25 * BASE_WIDTH, BASE_HEIGHT, 0.0));
-    modelViewMatrix = mult(modelViewMatrix, rotate(theta[LowerArm], vec3(0, 0, 1)));
-    lowerArm(modelViewMatrix);
-    printm(translate(0.0, BASE_HEIGHT, 0.0));
-    printm(modelViewMatrix);
+    let modelViewMatrix3 = translate(0.25 * BASE_WIDTH, BASE_HEIGHT, 0.0)
+    modelViewMatrix3 = mult(modelViewMatrix, modelViewMatrix3);
+    modelViewMatrix3 = mult(modelViewMatrix3, rotate(theta[LowerArm], vec3(0, 0, 1)));
+    lowerArm(modelViewMatrix3);
+    // printm(translate(0.0, BASE_HEIGHT, 0.0));
+    // printm(modelViewMatrix);
 
     let modelViewMatrix2 = translate(-0.25 * BASE_WIDTH, BASE_HEIGHT, 0.0);
-    modelViewMatrix2 = mult(modelViewMatrix2, rotate(theta[Base], vec3(0, 1, 0)));
+    modelViewMatrix2 = mult(modelViewMatrix2, modelViewMatrix);
     modelViewMatrix2 = mult(modelViewMatrix2, rotate(theta[UpperArm], vec3(0, 0, 1)));
     upperArm(modelViewMatrix2);
 
@@ -277,18 +284,100 @@ function render() {
 
 function testRender() {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    var TEST = new Tree("test",
+    var sheep = new Tree("body",
         new ModelData(
-            translate(0, 0, 0),
-            translate(0, 0, 0),
-            rotate(theta[Base], vec3(0, 1, 0)),
-            [1, 1, 1]
+            translate(-3, -2, 0),
+            translate(0, 1.5, 0),
+            rotate(theta[0], vec3(0, 1, 0)),
+            [4, 3, 4]
         ),
         gl,
         modelViewMatrixLoc
     )
-    console.log(TEST)
-    let _ = [...TEST.preOrderTraversal()]
+    sheep.insert("body", "head", 
+        new ModelData(
+            translate(-3, 1, 0),
+            translate(0, 1, 0),
+            rotate(0, vec3(0, 0, 1)),
+            [2, 2, 2]
+            )
+    )
+
+    sheep.insert("body", "left front thigh", 
+        new ModelData(
+            translate(-1.5, 0.5, 1.5),
+            translate(0, -0.5, 0),
+            rotate(theta[1], vec3(0, 0, 1)),
+            [1, 2, 1]
+            )
+    )
+
+    sheep.insert("left front thigh", "left front calf", 
+        new ModelData(
+            translate(0, -1, 0),
+            translate(0, -0.5, 0),
+            rotate(theta[2], vec3(0, 0, 1)),
+            [1, 2, 1]
+            )
+    )
+
+    sheep.insert("body", "right front thigh", 
+        new ModelData(
+            translate(-1.5, 0.5, -1.5),
+            translate(0, -0.5, 0),
+            rotate(theta[3], vec3(0, 0, 1)),
+            [1, 2, 1]
+            )
+    )
+
+    sheep.insert("right front thigh", "right front calf", 
+        new ModelData(
+            translate(0, -1, 0),
+            translate(0, -0.5, 0),
+            rotate(theta[4], vec3(0, 0, 1)),
+            [1, 2, 1]
+            )
+    )
+
+    sheep.insert("body", "left back thigh", 
+        new ModelData(
+            translate(1.5, 0.5, 1.5),
+            translate(0, -0.5, 0),
+            rotate(theta[5], vec3(0, 0, 1)),
+            [1, 2, 1]
+            )
+    )
+
+    sheep.insert("left back thigh", "left back calf", 
+        new ModelData(
+            translate(0, -1, 0),
+            translate(0, -0.5, 0),
+            rotate(theta[6], vec3(0, 0, 1)),
+            [1, 2, 1]
+            )
+    )
+
+    sheep.insert("body", "right back thigh", 
+        new ModelData(
+            translate(1.5, 0.5, -1.5),
+            translate(0, -0.5, 0),
+            rotate(theta[7], vec3(0, 0, 1)),
+            [1, 2, 1]
+            )
+    )
+
+    sheep.insert("right back thigh", "right back calf", 
+        new ModelData(
+            translate(0, -1, 0),
+            translate(0, -0.5, 0),
+            rotate(theta[8], vec3(0, 0, 1)),
+            [1, 2, 1]
+            )
+    )
+
+
+    console.log(sheep)
+    let _ = [...sheep.preOrderTraversal()]
     requestAnimationFrame(testRender);
 }
 

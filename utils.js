@@ -23,6 +23,7 @@ class ModelData {
         this.offset = offset;
         this.rot = rot;
         this.dim = dim;
+        this.built = false;
     }
 
 
@@ -40,9 +41,11 @@ class Tree {
         var s = scale(dim[0], dim[1], dim[2]);
 
         if(node.parent != null){
-          node.value.modelView = mult(node.value.modelView, node.parent.value.modelView) 
+          node.value.modelView = mult(node.parent.value.modelView, node.value.modelView)
         }
+
         node.value.modelView = mult(node.value.modelView, node.value.rot);
+        
         var instanceMatrix = mult(node.value.offset, s);
         // instanceMatrix = mult(node.origin, instanceMatrix);
     
@@ -55,13 +58,17 @@ class Tree {
     
 
     *preOrderTraversal(node = this.root) {
-        this.makeMesh(node);
-        yield node;
+        yield node;  
+        if(!node.built){
+            this.makeMesh(node)
+            node.built = true;
+        }
         if (node.children.length) {
             for (let child of node.children) {
                 yield* this.preOrderTraversal(child);
             }
         }
+        
     }
 
     insert(parentNodeKey, key, value = key) {
