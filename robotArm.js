@@ -294,6 +294,7 @@ function testRender() {
         gl,
         modelViewMatrixLoc
     )
+    
     sheep.insert("body", "head", 
         new ModelData(
             translate(-3, 1, 0),
@@ -374,10 +375,66 @@ function testRender() {
             [1, 2, 1]
             )
     )
+    
+    var man = new Tree("body",
+        new ModelData(
+            translate(5, 0, 0),
+            translate(0, 2.5, 0),
+            rotate(theta[9], vec3(0, 1, 0)),
+            [1, 5, 2]
+        ),
+        gl,
+        modelViewMatrixLoc
+    )
+
+    man.insert("body", "head", 
+        new ModelData(
+            translate(0, 5, 0),
+            translate(0, 1.5, 0),
+            rotate(0, vec3(0, 1, 0)),
+            [3, 3, 3]
+        )
+    )
+
+    man.insert("body", "left upper arm", 
+        new ModelData(
+            translate(-1, 4.5, 0),
+            translate(0, -1.5, 0),
+            rotate(theta[10], vec3(0, 0, 1)),
+            [1, 3, 1]
+        )
+    )
+
+    man.insert("left upper arm", "left lower arm",
+        new ModelData(
+            translate(0, -3, 0),
+            translate(0, -1.5, 0),
+            rotate(theta[11], vec3(0, 0, 1)),
+            [1, 3, 1]
+        )
+    )
+
+    man.insert("body", "right upper arm", 
+        new ModelData(
+            translate(1, 4.5, 0),
+            translate(0, -1.5, 0),
+            rotate(theta[12], vec3(0, 0, 1)),
+            [1, 3, 1]
+        )
+    )
+
+    man.insert("right upper arm", "right lower arm",
+        new ModelData(
+            translate(0, -3, 0),
+            translate(0, -1.5, 0),
+            rotate(theta[13], vec3(0, 0, 1)),
+            [1, 3, 1]
+        )
+    )
 
 
-    console.log(sheep)
     let _ = [...sheep.preOrderTraversal()]
+    let __ = [...man.preOrderTraversal()]
     requestAnimationFrame(testRender);
 }
 
