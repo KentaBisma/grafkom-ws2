@@ -17,12 +17,28 @@ class TreeNode {
 }
 
 class ModelData {
+    static SCALE_MULTIPLIER = 10
     constructor(origin, offset, rot, dim) {
-        this.modelView = origin;
-        this.origin = origin;
-        this.offset = offset;
-        this.rot = rot;
-        this.dim = dim;
+        // decompose and rescale
+        this.modelView = translate(
+            origin[0] * ModelData.SCALE_MULTIPLIER,
+            origin[1] * ModelData.SCALE_MULTIPLIER,
+            origin[2] * ModelData.SCALE_MULTIPLIER,
+            );
+        this.offset = translate(
+            offset[0] * ModelData.SCALE_MULTIPLIER,
+            offset[1] * ModelData.SCALE_MULTIPLIER,
+            offset[2] * ModelData.SCALE_MULTIPLIER,
+            );
+        this.rot = rotate(
+            rot[0],
+            rot[1]
+        );
+        this.dim = [
+            dim[0] * ModelData.SCALE_MULTIPLIER,
+            dim[1] * ModelData.SCALE_MULTIPLIER,
+            dim[2] * ModelData.SCALE_MULTIPLIER,
+        ];
         this.built = false;
     }
 
@@ -33,33 +49,35 @@ class Tree {
     constructor(key, value = key, gl, loc) {
         this.root = new TreeNode(key, value);
         this.gl = gl;
-        this.loc= loc;
+        this.loc = loc;
     }
 
     makeMesh(node) {
         var dim = node.value.dim
-        var s = scale(dim[0], dim[1], dim[2]);
+        var s = scale(
+            dim[0],
+            dim[1],
+            dim[2]);
 
-        if(node.parent != null){
-          node.value.modelView = mult(node.parent.value.modelView, node.value.modelView)
+        if (node.parent != null) {
+            node.value.modelView = mult(node.parent.value.modelView, node.value.modelView)
         }
 
         node.value.modelView = mult(node.value.modelView, node.value.rot);
-        
+
         var instanceMatrix = mult(node.value.offset, s);
-        // instanceMatrix = mult(node.origin, instanceMatrix);
-    
+
         var t = mult(node.value.modelView, instanceMatrix);
-        this.gl.uniformMatrix4fv(this.loc,  false, flatten(t) );
+        this.gl.uniformMatrix4fv(this.loc, false, flatten(t));
 
         // 36 for cubes
-        this.gl.drawArrays( this.gl.TRIANGLES, 0, 36);
+        this.gl.drawArrays(this.gl.TRIANGLES, 0, 36);
     }
-    
+
 
     *preOrderTraversal(node = this.root) {
-        yield node;  
-        if(!node.built){
+        yield node;
+        if (!node.built) {
             this.makeMesh(node)
             node.built = true;
         }
@@ -68,7 +86,7 @@ class Tree {
                 yield* this.preOrderTraversal(child);
             }
         }
-        
+
     }
 
     insert(parentNodeKey, key, value = key) {
