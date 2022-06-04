@@ -38,7 +38,7 @@ var vertexColors = [
 var modelViewMatrix, projectionMatrix;
 
 // Array of rotation angles (in degrees) for each rotation axis
-var theta = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+var theta = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 var animate = false
 
 var angleCam = 0;
@@ -77,7 +77,7 @@ var vBuffer, cBuffer;
 // Models
 var sheep = null;
 var man = null;
-
+var creeper = null;
 window.onload = function init() {
 
 	canvas = document.getElementById("gl-canvas");
@@ -450,8 +450,63 @@ function buildModelTrees() {
 		)
 	)
 
+	creeper = new Tree("body",
+		new ModelData(
+			[-15, -2, 0],
+			[0, 3.25, 0],
+			[theta[20], vec3(0, 1, 0)],
+			[2, 3.5, 1]
+		),
+		gl,
+		modelViewMatrixLoc
+	)
+	creeper.insert("body", "head",
+		new ModelData(
+			[0, 5, 0],
+			[0, 1, 0],
+			[theta[25], vec3(0, 1, 0)],
+			[2, 2, 2]
+		)
+	)
+	creeper.insert("body", "left front leg",
+		new ModelData(
+			[-0.5, 2, 0],
+			[0, -1, 1],
+			[theta[21], vec3(1, 0, 0)],
+			[1, 2, 1]
+		)
+	)
+
+	creeper.insert("body", "left back leg",
+		new ModelData(
+			[-0.5, 2, 0],
+			[0, -1, -1],
+			[theta[22], vec3(1, 0, 0)],
+			[1, 2, 1]
+		)
+	)
+
+	creeper.insert("body", "right front leg",
+		new ModelData(
+			[0.5, 2, 0],
+			[0, -1, 1],
+			[theta[23], vec3(1, 0, 0)],
+			[1, 2, 1]
+		)
+	)
+
+	creeper.insert("body", "right back leg",
+		new ModelData(
+			[0.5, 2, 0],
+			[0, -1, -1],
+			[theta[24], vec3(1, 0, 0)],
+			[1, 2, 1]
+		)
+	)
+
 	let _ = [...sheep.preOrderTraversal()]
 	let __ = [...man.preOrderTraversal()]
+	let ___ = [...creeper.preOrderTraversal()]
 }
 
 function toggleAnimation() {
