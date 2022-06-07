@@ -196,7 +196,7 @@ window.onload = function init() {
 }
 
 function initSliders() {
-	for (let i = 0; i < 31; i++) {
+	for (let i = 0; i < 35; i++) {
 		document.getElementById("slider" + i).oninput = function (event) {
 			theta[i] = event.target.value;
 		};
@@ -646,7 +646,7 @@ function buildModelTrees() {
 
 	drill = new Tree("body",
 		new ModelData(
-			[-5, 2, -10],
+			[-5, 4, -10],
 			[0, 0, 0],
 			[theta[31], vec3(1, 0, 0)],
 			[7, 7, 7]
@@ -678,7 +678,7 @@ function buildModelTrees() {
 			[1.5, 0, 0],
 			[0, 0, 0],
 			[theta[34], vec3(1, 0, 0)],
-			[1, 1, 1]
+			[3, 1, 1]
 		)
 	)
 
