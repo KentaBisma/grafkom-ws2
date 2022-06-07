@@ -36,7 +36,7 @@ var vertexColors = [
 
 // Shader transformation matrices
 var modelViewMatrix, projectionMatrix;
-
+var uSamplerLocation;
 // Array of rotation angles (in degrees) for each rotation axis
 var theta = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 var animate = false
@@ -116,6 +116,8 @@ window.onload = function init() {
 	worldInverseTransposeLocation = gl.getUniformLocation(program, "u_worldInverseTranspose");
 	lightWorldPositionLocation = gl.getUniformLocation(program, "u_lightWorldPosition");
 	worldLocation = gl.getUniformLocation(program, "u_world");
+	uSamplerLocation = gl.getUniformLocation(program, 'uSampler');
+
 
 	vBuffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
@@ -141,6 +143,36 @@ window.onload = function init() {
 	var normalLocation = gl.getAttribLocation(program, "a_normal");
 	gl.vertexAttribPointer(normalLocation, 3, gl.FLOAT, false, 0, 0);
 	gl.enableVertexAttribArray(normalLocation);
+
+	var texCoordLocation = gl.getAttribLocation(program, "aVertexTextureCoords");
+	gl.vertexAttribPointer(texCoordLocation, 2, gl.FLOAT, true, 0, 0);
+	gl.enableVertexAttribArray(texCoordLocation);
+
+	var texCoordBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+	setTexcoords(gl);
+
+	var texture = gl.createTexture();
+
+	// use texture unit 0
+	gl.activeTexture(gl.TEXTURE0 + 0);
+
+	// bind to the TEXTURE_2D bind point of texture unit 0
+	gl.bindTexture(gl.TEXTURE_2D, texture);
+
+	// Fill the texture with a 1x1 blue pixel.
+	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE,
+		new Uint8Array([0, 0, 255, 255]));
+
+	// Asynchronously load an image
+	var image = new Image();
+	image.src = "/common/images/kentashap.jpg";
+	image.addEventListener('load', function () {
+		// Now that the image has loaded make copy it to the texture.
+		gl.bindTexture(gl.TEXTURE_2D, texture);
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+		gl.generateMipmap(gl.TEXTURE_2D);
+	});
 
 	initSliders();
 
@@ -275,6 +307,61 @@ function addNormal(code) {
 		default:
 			return
 	}
+}
+
+function setTexcoords(gl) {
+	gl.bufferData(
+		gl.ARRAY_BUFFER,
+		new Float32Array([
+			// front
+			0, 0,
+			0, 1,
+			1, 0,
+			0, 1,
+			1, 1,
+			1, 0,
+
+			// right
+			0, 0,
+			1, 1,
+			0, 1,
+			0, 0,
+			1, 0,
+			1, 1,
+
+			// bottom
+			0, 0,
+			0, 1,
+			1, 1,
+			0, 0,
+			1, 1,
+			1, 0,
+
+			// top
+			0, 0,
+			1, 0,
+			1, 1,
+			0, 0,
+			1, 1,
+			0, 1,
+
+			// back
+			0, 0,
+			1, 0,
+			0, 1,
+			0, 1,
+			1, 0,
+			1, 1,
+
+			// left
+			0, 0,
+			0, 1,
+			1, 1,
+			0, 0,
+			1, 1,
+			1, 0,
+		]),
+		gl.STATIC_DRAW);
 }
 
 function buildModelTrees() {
