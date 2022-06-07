@@ -38,7 +38,7 @@ var vertexColors = [
 var modelViewMatrix, projectionMatrix;
 var uSamplerLocation;
 // Array of rotation angles (in degrees) for each rotation axis
-var theta = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+var theta = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 var animate = false
 
 var angleCam = 0;
@@ -78,6 +78,8 @@ var vBuffer, cBuffer;
 var sheep = null;
 var man = null;
 var creeper = null;
+var squid = null;
+var drill = null;
 window.onload = function init() {
 
 	canvas = document.getElementById("gl-canvas");
@@ -194,7 +196,7 @@ window.onload = function init() {
 }
 
 function initSliders() {
-	for (let i = 0; i < 20; i++) {
+	for (let i = 0; i < 31; i++) {
 		document.getElementById("slider" + i).oninput = function (event) {
 			theta[i] = event.target.value;
 		};
@@ -229,7 +231,7 @@ function render() {
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
 	if (animate) {
-		for (let i = 0; i < 20; i++) {
+		for (let i = 0; i < 35	; i++) {
 			if (i % 3) {
 				theta[i] = theta[i] + 0.8 % 360
 			} else {
@@ -595,13 +597,102 @@ function buildModelTrees() {
 		)
 	)
 
+	squid = new Tree("body",
+		new ModelData(
+			[-15, 2, -10],
+			[0, 3.25, 0],
+			[theta[26], vec3(0, 1, 0)],
+			[3, 4, 3]
+		),
+		gl,
+		modelViewMatrixLoc
+	)
+
+	squid.insert("body", "left front leg",
+		new ModelData(
+			[-1, 2, 0],
+			[0, -3.5, 1],
+			[theta[27], vec3(1, 0, 0)],
+			[1, 7, 1]
+		)
+	)
+
+	squid.insert("body", "left back leg",
+		new ModelData(
+			[-1, 2, 0],
+			[0, -3.5, -1],
+			[theta[28], vec3(1, 0, 0)],
+			[1, 7, 1]
+		)
+	)
+
+	squid.insert("body", "right front leg",
+		new ModelData(
+			[1, 2, 0],
+			[0, -3.5, 1],
+			[theta[29], vec3(1, 0, 0)],
+			[1, 7, 1]
+		)
+	)
+
+	squid.insert("body", "right back leg",
+		new ModelData(
+			[1, 2, 0],
+			[0, -3.5, -1],
+			[theta[30], vec3(1, 0, 0)],
+			[1, 7, 1]
+		)
+	)
+
+	drill = new Tree("body",
+		new ModelData(
+			[-5, 2, -10],
+			[0, 0, 0],
+			[theta[31], vec3(1, 0, 0)],
+			[7, 7, 7]
+		),
+		gl,
+		modelViewMatrixLoc
+	)
+
+	drill.insert("body", "smallbody",
+		new ModelData(
+			[3.5, 0, 0],
+			[0, 0, 0],
+			[theta[32], vec3(1, 0, 0)],
+			[5, 5, 5]
+		)
+	)
+
+	drill.insert("smallbody", "smallerbody",
+		new ModelData(
+			[2.5, 0, 0],
+			[0, 0, 0],
+			[theta[33], vec3(1, 0, 0)],
+			[3, 3, 3]
+		)
+	)
+
+	drill.insert("smallerbody", "smallestbody",
+		new ModelData(
+			[1.5, 0, 0],
+			[0, 0, 0],
+			[theta[34], vec3(1, 0, 0)],
+			[1, 1, 1]
+		)
+	)
+
+	
+
 	let _ = [...sheep.preOrderTraversal()]
 	let __ = [...man.preOrderTraversal()]
 	let ___ = [...creeper.preOrderTraversal()]
+	let ____ = [...squid.preOrderTraversal()]
+	let _____ = [...drill.preOrderTraversal()]
 }
 
 function toggleAnimation() {
-	theta = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+	theta = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 	let sliders = document.getElementsByTagName("input")
 	for (let slider of sliders) {
 		slider.value = 0
