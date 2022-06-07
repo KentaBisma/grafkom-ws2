@@ -601,7 +601,7 @@ function buildModelTrees() {
 }
 
 function toggleAnimation() {
-	theta = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+	theta = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 	let sliders = document.getElementsByTagName("input")
 	for (let slider of sliders) {
 		slider.value = 0
