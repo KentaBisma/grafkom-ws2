@@ -92,7 +92,7 @@ window.onload = function init() {
 
 
 	gl.enable(gl.CULL_FACE); //enable depth buffer
-	gl.enable(gl.DEPTH_TEST);
+	gl.enable(gl.DEPTH_TEST);		
 
 	//initial default
 
@@ -144,13 +144,13 @@ window.onload = function init() {
 	gl.vertexAttribPointer(normalLocation, 3, gl.FLOAT, false, 0, 0);
 	gl.enableVertexAttribArray(normalLocation);
 
-	var texCoordLocation = gl.getAttribLocation(program, "aVertexTextureCoords");
-	gl.vertexAttribPointer(texCoordLocation, 2, gl.FLOAT, true, 0, 0);
-	gl.enableVertexAttribArray(texCoordLocation);
-
 	var texCoordBuffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
 	setTexcoords(gl);
+
+	var texCoordLocation = gl.getAttribLocation(program, "aVertexTextureCoords");
+	gl.vertexAttribPointer(texCoordLocation, 2, gl.FLOAT, true, 0, 0);
+	gl.enableVertexAttribArray(texCoordLocation);
 
 	var texture = gl.createTexture();
 
@@ -159,6 +159,8 @@ window.onload = function init() {
 
 	// bind to the TEXTURE_2D bind point of texture unit 0
 	gl.bindTexture(gl.TEXTURE_2D, texture);
+
+	gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 
 	// Fill the texture with a 1x1 blue pixel.
 	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE,
@@ -313,53 +315,55 @@ function setTexcoords(gl) {
 	gl.bufferData(
 		gl.ARRAY_BUFFER,
 		new Float32Array([
-			// front
-			0, 0,
-			0, 1,
-			1, 0,
-			0, 1,
-			1, 1,
-			1, 0,
 
-			// right
-			0, 0,
-			1, 1,
-			0, 1,
-			0, 0,
-			1, 0,
-			1, 1,
+			//Front
+			0.0,1.0,
+			0.0,0.0,
+			1.0,0.0,
+			0.0,1.0,
+			1.0,0.0,
+			1.0,1.0,
 
-			// bottom
-			0, 0,
-			0, 1,
-			1, 1,
-			0, 0,
-			1, 1,
-			1, 0,
+			//Right
+			0.0,1.0,
+			0.0,0.0,
+			1.0,0.0,
+			0.0,1.0,
+			1.0,0.0,
+			1.0,1.0,
 
-			// top
-			0, 0,
-			1, 0,
-			1, 1,
-			0, 0,
-			1, 1,
-			0, 1,
+			//Down
+			0.0,0.0,
+			1.0,0.0,
+			1.0,1.0,
+			0.0,0.0,
+			1.0,1.0,
+			0.0,1.0,
 
-			// back
-			0, 0,
-			1, 0,
-			0, 1,
-			0, 1,
-			1, 0,
-			1, 1,
+			//Up
+			1.0,0.0,
+			1.0,1.0,
+			0.0,1.0,
+			1.0,0.0,
+			0.0,1.0,
+			0.0,0.0,
+			
+			//Back
+			1.0,1.0,
+			0.0,1.0,
+			0.0,0.0,
+			1.0,1.0,
+			0.0,0.0,
+			1.0,0.0,
 
-			// left
-			0, 0,
-			0, 1,
-			1, 1,
-			0, 0,
-			1, 1,
-			1, 0,
+			//Left
+			0.0,0.0,
+			1.0,0.0,
+			1.0,1.0,
+			0.0,0.0,
+			1.0,1.0,
+			0.0,1.0
+			
 		]),
 		gl.STATIC_DRAW);
 }
