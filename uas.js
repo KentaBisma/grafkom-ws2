@@ -9,30 +9,18 @@ var count = 36;
 
 var points = [];
 var normals = [];
-var colors = [];
 
 var vertices = [
-	vec4(-0.5, -0.5, 0.5, 1.0),
-	vec4(-0.5, 0.5, 0.5, 1.0),
-	vec4(0.5, 0.5, 0.5, 1.0),
-	vec4(0.5, -0.5, 0.5, 1.0),
-	vec4(-0.5, -0.5, -0.5, 1.0),
-	vec4(-0.5, 0.5, -0.5, 1.0),
-	vec4(0.5, 0.5, -0.5, 1.0),
-	vec4(0.5, -0.5, -0.5, 1.0)
+    vec4(-0.5, -0.5, 0.5, 1.0),
+    vec4(-0.5, 0.5, 0.5, 1.0),
+    vec4(0.5, 0.5, 0.5, 1.0),
+    vec4(0.5, -0.5, 0.5, 1.0),
+    vec4(-0.5, -0.5, -0.5, 1.0),
+    vec4(-0.5, 0.5, -0.5, 1.0),
+    vec4(0.5, 0.5, -0.5, 1.0),
+    vec4(0.5, -0.5, -0.5, 1.0)
 ];
 
-// RGBA colors
-var vertexColors = [
-	vec4(0.0, 0.0, 0.0, 1.0),  // black
-	vec4(1.0, 0.0, 0.0, 1.0),  // red
-	vec4(1.0, 1.0, 0.0, 1.0),  // yellow
-	vec4(0.0, 1.0, 0.0, 1.0),  // green
-	vec4(0.0, 0.0, 1.0, 1.0),  // blue
-	vec4(1.0, 0.0, 1.0, 1.0),  // magenta
-	vec4(1.0, 1.0, 1.0, 1.0),  // white
-	vec4(0.0, 1.0, 1.0, 1.0)   // cyan
-];
 
 // Shader transformation matrices
 var modelViewMatrix, projectionMatrix;
@@ -57,7 +45,7 @@ var worldMatrix;
 var FOV_Radians; //field of view
 var aspect; //projection aspect ratio
 var zNear; //near view volume
-var zFar;  //far view volume
+var zFar; //far view volume
 
 var cameraPosition = [100, 110, 200]; //eye/camera coordinates
 var UpVector = [0, 1, 0]; //up vector
@@ -72,7 +60,7 @@ var worldLocation;
 var modelViewMatrixLoc;
 
 // Buffers
-var vBuffer, cBuffer;
+var vBuffer;
 
 // Models
 var sheep = null;
@@ -82,69 +70,61 @@ var squid = null;
 var drill = null;
 window.onload = function init() {
 
-	canvas = document.getElementById("gl-canvas");
+    canvas = document.getElementById("gl-canvas");
 
-	gl = canvas.getContext('webgl2');
-	if (!gl) alert("WebGL 2.0 isn't available");
+    gl = canvas.getContext('webgl2');
+    if (!gl) alert("WebGL 2.0 isn't available");
 
-	//  Configure WebGL
+    //  Configure WebGL
 
-	gl.viewport(0, 0, canvas.width, canvas.height);
-	gl.clearColor(1.0, 1.0, 1.0, 1.0);
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    gl.clearColor(1.0, 1.0, 1.0, 1.0);
 
 
 	gl.enable(gl.CULL_FACE); //enable depth buffer
 	gl.enable(gl.DEPTH_TEST);		
 
-	//initial default
+    //initial default
 
-	fRotationRadians = degToRad(0);
-	FOV_Radians = degToRad(60);
-	aspect = canvas.width / canvas.height;
-	zNear = 1;
-	zFar = 2000;
+    fRotationRadians = degToRad(0);
+    FOV_Radians = degToRad(60);
+    aspect = canvas.width / canvas.height;
+    zNear = 1;
+    zFar = 2000;
 
-	projectionMatrix = m4.perspective(FOV_Radians, aspect, zNear, zFar); //setup perspective viewing volume
+    projectionMatrix = m4.perspective(FOV_Radians, aspect, zNear, zFar); //setup perspective viewing volume
 
-	colorCube();
+    colorCube();
 
-	//  Load shaders and initialize attribute buffers
-	var program = initShaders(gl, "vertex-shader", "fragment-shader");
-	gl.useProgram(program);
+    //  Load shaders and initialize attribute buffers
+    var program = initShaders(gl, "vertex-shader", "fragment-shader");
+    gl.useProgram(program);
 
-	// Load the data into the GPU
+    // Load the data into the GPU
 
-	worldViewProjectionLocation = gl.getUniformLocation(program, "u_worldViewProjection");
-	worldInverseTransposeLocation = gl.getUniformLocation(program, "u_worldInverseTranspose");
-	lightWorldPositionLocation = gl.getUniformLocation(program, "u_lightWorldPosition");
-	worldLocation = gl.getUniformLocation(program, "u_world");
-	uSamplerLocation = gl.getUniformLocation(program, 'uSampler');
+    worldViewProjectionLocation = gl.getUniformLocation(program, "u_worldViewProjection");
+    worldInverseTransposeLocation = gl.getUniformLocation(program, "u_worldInverseTranspose");
+    lightWorldPositionLocation = gl.getUniformLocation(program, "u_lightWorldPosition");
+    worldLocation = gl.getUniformLocation(program, "u_world");
+    uSamplerLocation = gl.getUniformLocation(program, 'uSampler');
 
 
-	vBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
-	console.log(flatten(points))
-	gl.bufferData(gl.ARRAY_BUFFER, flatten(points), gl.STATIC_DRAW);
+    vBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
+    console.log(flatten(points))
+    gl.bufferData(gl.ARRAY_BUFFER, flatten(points), gl.STATIC_DRAW);
 
-	var positionLocation = gl.getAttribLocation(program, "a_position");
-	gl.vertexAttribPointer(positionLocation, 4, gl.FLOAT, false, 0, 0);
-	gl.enableVertexAttribArray(positionLocation);
+    var positionLocation = gl.getAttribLocation(program, "a_position");
+    gl.vertexAttribPointer(positionLocation, 4, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(positionLocation);
 
-	cBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer);
-	gl.bufferData(gl.ARRAY_BUFFER, flatten(colors), gl.STATIC_DRAW);
+    var normalBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normals), gl.STATIC_DRAW);
 
-	var colorLoc = gl.getAttribLocation(program, "a_color");
-	gl.vertexAttribPointer(colorLoc, 4, gl.FLOAT, false, 0, 0);
-	gl.enableVertexAttribArray(colorLoc);
-
-	var normalBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
-	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normals), gl.STATIC_DRAW);
-
-	var normalLocation = gl.getAttribLocation(program, "a_normal");
-	gl.vertexAttribPointer(normalLocation, 3, gl.FLOAT, false, 0, 0);
-	gl.enableVertexAttribArray(normalLocation);
+    var normalLocation = gl.getAttribLocation(program, "a_normal");
+    gl.vertexAttribPointer(normalLocation, 3, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(normalLocation);
 
 	var texCoordBuffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
@@ -156,11 +136,11 @@ window.onload = function init() {
 
 	var texture = gl.createTexture();
 
-	// use texture unit 0
-	gl.activeTexture(gl.TEXTURE0 + 0);
+    // use texture unit 0
+    gl.activeTexture(gl.TEXTURE0 + 0);
 
-	// bind to the TEXTURE_2D bind point of texture unit 0
-	gl.bindTexture(gl.TEXTURE_2D, texture);
+    // bind to the TEXTURE_2D bind point of texture unit 0
+    gl.bindTexture(gl.TEXTURE_2D, texture);
 
 	gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 
@@ -168,31 +148,31 @@ window.onload = function init() {
 	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE,
 		new Uint8Array([0, 0, 255, 255]));
 
-	// Asynchronously load an image
-	var image = new Image();
-	image.src = "/common/images/kentashap.jpg";
-	image.addEventListener('load', function () {
-		// Now that the image has loaded make copy it to the texture.
-		gl.bindTexture(gl.TEXTURE_2D, texture);
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-		gl.generateMipmap(gl.TEXTURE_2D);
-	});
+    // Asynchronously load an image
+    var image = new Image();
+    image.src = "/common/images/FASILKOMUI.png";
+    image.addEventListener('load', function() {
+        // Now that the image has loaded make copy it to the texture.
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+        gl.generateMipmap(gl.TEXTURE_2D);
+    });
 
-	initSliders();
+    initSliders();
 
-	// Associate out shader variables with our data buffer
-	modelViewMatrixLoc = gl.getUniformLocation(program, "u_modelViewMatrix");
+    // Associate out shader variables with our data buffer
+    modelViewMatrixLoc = gl.getUniformLocation(program, "u_modelViewMatrix");
 
-	//update FOV
-	var angleCamValue = document.getElementById("Cameravalue");
-	angleCamValue.innerHTML = angleCam;
-	document.getElementById("sliderCam").oninput = function (event) {
-		angleCamValue.innerHTML = event.target.value;
-		fRotationRadians = degToRad(event.target.value);
-	};
+    //update FOV
+    var angleCamValue = document.getElementById("Cameravalue");
+    angleCamValue.innerHTML = angleCam;
+    document.getElementById("sliderCam").oninput = function(event) {
+        angleCamValue.innerHTML = event.target.value;
+        fRotationRadians = degToRad(event.target.value);
+    };
 
-	primitiveType = gl.TRIANGLES;
-	render(); //default render
+    primitiveType = gl.TRIANGLES;
+    render(); //default render
 }
 
 function initSliders() {
@@ -204,31 +184,31 @@ function initSliders() {
 }
 
 function render() {
-	// Compute the camera's matrix using look at.
-	cameraMatrix = m4.lookAt(cameraPosition, fPosition, UpVector);
+    // Compute the camera's matrix using look at.
+    cameraMatrix = m4.lookAt(cameraPosition, fPosition, UpVector);
 
-	// Make a view matrix from the camera matrix
-	viewMatrix = m4.inverse(cameraMatrix);
+    // Make a view matrix from the camera matrix
+    viewMatrix = m4.inverse(cameraMatrix);
 
-	// Compute a view projection matrix
-	viewProjectionMatrix = m4.multiply(projectionMatrix, viewMatrix);
+    // Compute a view projection matrix
+    viewProjectionMatrix = m4.multiply(projectionMatrix, viewMatrix);
 
-	worldMatrix = m4.yRotation(fRotationRadians);
+    worldMatrix = m4.yRotation(fRotationRadians);
 
-	// Multiply the matrices.
-	worldViewProjectionMatrix = m4.multiply(viewProjectionMatrix, worldMatrix);
-	worldInverseMatrix = m4.inverse(worldMatrix);
-	worldInverseTransposeMatrix = m4.transpose(worldInverseMatrix);
+    // Multiply the matrices.
+    worldViewProjectionMatrix = m4.multiply(viewProjectionMatrix, worldMatrix);
+    worldInverseMatrix = m4.inverse(worldMatrix);
+    worldInverseTransposeMatrix = m4.transpose(worldInverseMatrix);
 
-	// Set the matrices
-	gl.uniformMatrix4fv(worldViewProjectionLocation, false, worldViewProjectionMatrix);
-	gl.uniformMatrix4fv(worldInverseTransposeLocation, false, worldInverseTransposeMatrix);
-	gl.uniformMatrix4fv(worldLocation, false, worldMatrix);
+    // Set the matrices
+    gl.uniformMatrix4fv(worldViewProjectionLocation, false, worldViewProjectionMatrix);
+    gl.uniformMatrix4fv(worldInverseTransposeLocation, false, worldInverseTransposeMatrix);
+    gl.uniformMatrix4fv(worldLocation, false, worldMatrix);
 
-	// set the light direction.
-	gl.uniform3fv(lightWorldPositionLocation, [20, 30, 60]);
+    // set the light direction.
+    gl.uniform3fv(lightWorldPositionLocation, [20, 30, 60]);
 
-	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
 	if (animate) {
 		for (let i = 0; i < 35	; i++) {
@@ -240,133 +220,77 @@ function render() {
 		}
 	}
 
-	buildModelTrees()
-	gl.drawArrays(primitiveType, offset, count);
-	requestAnimationFrame(render);
+    buildModelTrees()
+    gl.drawArrays(primitiveType, offset, count);
+    requestAnimationFrame(render);
 }
 
 function radToDeg(r) {
-	return r * 180 / Math.PI;
+    return r * 180 / Math.PI;
 }
 
 function degToRad(d) {
-	return d * Math.PI / 180;
+    return d * Math.PI / 180;
 }
 
 function quad(a, b, c, d) {
-	colors.push(vertexColors[a]);
-	points.push(vertices[a]);
-	colors.push(vertexColors[a]);
-	points.push(vertices[b]);
-	colors.push(vertexColors[a]);
-	points.push(vertices[c]);
-	colors.push(vertexColors[a]);
-	points.push(vertices[a]);
-	colors.push(vertexColors[a]);
-	points.push(vertices[c]);
-	colors.push(vertexColors[a]);
-	points.push(vertices[d]);
+    points.push(vertices[a]);
+    points.push(vertices[b]);
+    points.push(vertices[c]);
+    points.push(vertices[a]);
+    points.push(vertices[c]);
+    points.push(vertices[d]);
 }
 
 function colorCube() {
-	quad(1, 0, 3, 2);
-	addNormal("F")
-	quad(2, 3, 7, 6);
-	addNormal("R")
-	quad(3, 0, 4, 7);
-	addNormal("D")
-	quad(6, 5, 1, 2);
-	addNormal("U")
-	quad(4, 5, 6, 7);
-	addNormal("B")
-	quad(5, 4, 0, 1);
-	addNormal("L")
+    quad(1, 0, 3, 2);
+    addNormal("F")
+    quad(2, 3, 7, 6);
+    addNormal("R")
+    quad(3, 0, 4, 7);
+    addNormal("D")
+    quad(6, 5, 1, 2);
+    addNormal("U")
+    quad(4, 5, 6, 7);
+    addNormal("B")
+    quad(5, 4, 0, 1);
+    addNormal("L")
 }
 
 function addNormal(code) {
-	const iterate = (x, y, z) => {
-		for (let i = 0; i < 6; i++) {
-			normals.push(x, y, z)
-		}
-	}
-	switch (code) {
-		case "U":
-			iterate(0, 1, 0)
-			break
-		case "D":
-			iterate(0, -1, 0)
-			break
-		case "F":
-			iterate(0, 0, 1)
-			break
-		case "B":
-			iterate(0, 0, -1)
-			break
-		case "R":
-			iterate(1, 0, 0)
-			break
-		case "L":
-			iterate(-1, 0, 0)
-			break
-		default:
-			return
-	}
+    const iterate = (x, y, z) => {
+        for (let i = 0; i < 6; i++) {
+            normals.push(x, y, z)
+        }
+    }
+    switch (code) {
+        case "U":
+            iterate(0, 1, 0)
+            break
+        case "D":
+            iterate(0, -1, 0)
+            break
+        case "F":
+            iterate(0, 0, 1)
+            break
+        case "B":
+            iterate(0, 0, -1)
+            break
+        case "R":
+            iterate(1, 0, 0)
+            break
+        case "L":
+            iterate(-1, 0, 0)
+            break
+        default:
+            return
+    }
 }
 
 function setTexcoords(gl) {
 	gl.bufferData(
 		gl.ARRAY_BUFFER,
-		new Float32Array([
-
-			//Front
-			0.0,1.0,
-			0.0,0.0,
-			1.0,0.0,
-			0.0,1.0,
-			1.0,0.0,
-			1.0,1.0,
-
-			//Right
-			0.0,1.0,
-			0.0,0.0,
-			1.0,0.0,
-			0.0,1.0,
-			1.0,0.0,
-			1.0,1.0,
-
-			//Down
-			0.0,0.0,
-			1.0,0.0,
-			1.0,1.0,
-			0.0,0.0,
-			1.0,1.0,
-			0.0,1.0,
-
-			//Up
-			1.0,0.0,
-			1.0,1.0,
-			0.0,1.0,
-			1.0,0.0,
-			0.0,1.0,
-			0.0,0.0,
-			
-			//Back
-			1.0,1.0,
-			0.0,1.0,
-			0.0,0.0,
-			1.0,1.0,
-			0.0,0.0,
-			1.0,0.0,
-
-			//Left
-			0.0,0.0,
-			1.0,0.0,
-			1.0,1.0,
-			0.0,0.0,
-			1.0,1.0,
-			0.0,1.0
-			
-		]),
+		TEXTCOORDS_CUBE,
 		gl.STATIC_DRAW);
 }
 
