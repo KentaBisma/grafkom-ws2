@@ -29,6 +29,7 @@ in vec4 a_position;
 in vec3 a_normal; //change color to normal vector
 
 uniform vec3 u_lightWorldPosition;
+uniform vec3 u_viewWorldPosition;
 
 uniform mat4 u_world;
 uniform mat4 u_worldViewProjection;
@@ -39,6 +40,7 @@ in vec2 aVertexTextureCoords;
 out vec2 vTextureCoords;
 out vec3 v_normal;
 out vec3 v_surfaceToLight;
+out vec3 v_surfaceToView;
 
 void main() {
   // Multiply the position by the matrix.
@@ -49,11 +51,15 @@ void main() {
   v_normal = mat3(u_worldInverseTranspose) * mat3(u_modelViewMatrix) * a_normal;
 
   // compute the world position of the surfoace
-  vec3 surfaceWorldPosition = (u_world * a_position).xyz;
+  vec3 surfaceWorldPosition = (u_world * u_modelViewMatrix * a_position).xyz;
 
   // compute the vector of the surface to the light
   // and pass it to the fragment shader
   v_surfaceToLight = u_lightWorldPosition - surfaceWorldPosition;
+
+  // compute the vector of the surface to the view/camera
+  // and pass it to the fragment shader
+  v_surfaceToView = u_viewWorldPosition - surfaceWorldPosition;
 }
 </script>
 
@@ -64,7 +70,18 @@ precision mediump float;
 
 // Passed in from the vertex shader.
 in vec3 v_normal;
+
 in vec3 v_surfaceToLight;
+in vec3 v_surfaceToView;
+
+uniform int u_lightType;
+uniform float u_shininess;
+uniform vec3 u_lightDirection;
+uniform float u_innerLimit;          // in dot space
+uniform float u_outerLimit;          // in dot space
+
+uniform vec3 u_reverseLightDirection;
+
 uniform sampler2D uSampler;
 in vec2 vTextureCoords;
 out vec4 FragColor;
@@ -76,14 +93,41 @@ void main() {
   vec3 normal = normalize(v_normal);
 
   vec3 surfaceToLightDirection = normalize(v_surfaceToLight);
+  vec3 surfaceToViewDirection = normalize(v_surfaceToView);
+  vec3 halfVector = normalize(surfaceToLightDirection + surfaceToViewDirection);
+
+  float dotFromDirection = dot(surfaceToLightDirection, -u_lightDirection);
+  float inLight = smoothstep(u_outerLimit, u_innerLimit, dotFromDirection);
+  float spotlight = inLight * dot(normal, surfaceToLightDirection);
+
+  float specular = inLight * pow(dot(normal, halfVector), u_shininess);
 
   float light = dot(normal, surfaceToLightDirection);
+
+  float dirLight = dot(normal, u_reverseLightDirection);
 
   FragColor = texture(uSampler, vTextureCoords);
 
   // Lets multiply just the color portion (not the alpha)
   // by the light
-  FragColor.rgb *= light;
+
+  vec3 lightOne = FragColor.rgb * dirLight;
+  vec3 lightTwo = FragColor.rgb * light;
+  vec3 lightThree = FragColor.rgb * spotlight;
+
+  if (u_lightType == 0) {
+    FragColor.rgb = lightThree;
+    FragColor.rgb += lightTwo;
+    FragColor.rgb += lightOne;
+  } else if (u_lightType == 1) {
+    FragColor.rgb = lightOne;
+  } else if (u_lightType == 2) {
+    FragColor.rgb = lightTwo;
+  } else if (u_lightType == 3) {
+    FragColor.rgb = lightThree;
+  }
+
+  FragColor.rgb += specular;
 }
 </script>
 
@@ -113,6 +157,8 @@ void main() {
     </div>
 
     <div class="row">
+      <h2>Canvas</h2>
+      <h2>Controls</h2>
       <div class="Leftcolumn">
         <canvas id="gl-canvas" width="800" height="600">
           Oops ... your browser doesn't sUpport the HTML5 canvas element
@@ -294,9 +340,68 @@ void main() {
           </div>
 
         </div>
-        <span></span>
-        <div class="group">
-          <span>Camera Rotation</span>
+        <div class="group" style="display: flex; flex-direction: column; gap: 10px;">
+          <span>Utils</span>
+          <button onclick="toggleAnimation()">
+            <svg style="width:24px;height:24px" xmlns="http://www.w3.org/2000/svg"
+              xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 24 24">
+              <path
+                d="M15 2c-2.71 0-5.05 1.54-6.22 3.78a7.062 7.062 0 0 0-3 3A7.014 7.014 0 0 0 2 15c0 3.87 3.13 7 7 7c2.71 0 5.05-1.54 6.22-3.78a7.062 7.062 0 0 0 3-3A7.014 7.014 0 0 0 22 9c0-3.87-3.13-7-7-7zM9 20a5.002 5.002 0 0 1-4-8c0 3.87 3.13 7 7 7c-.84.63-1.88 1-3 1zm3-3a5.002 5.002 0 0 1-4-8c0 3.86 3.13 6.99 7 7c-.84.63-1.88 1-3 1zm4.7-3.3c-.53.19-1.1.3-1.7.3c-2.76 0-5-2.24-5-5c0-.6.11-1.17.3-1.7c.53-.19 1.1-.3 1.7-.3c2.76 0 5 2.24 5 5c0 .6-.11 1.17-.3 1.7zM19 12c0-3.86-3.13-6.99-7-7a5.002 5.002 0 0 1 7 7z"
+                fill="currentColor"></path>
+            </svg>
+            <span>Toggle Animation</span>
+          </button>
+          <button onclick="toggleRenderingMode()">
+            <svg style="width:24px;height:24px" xmlns="http://www.w3.org/2000/svg"
+              xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 32 32">
+              <path
+                d="M28.504 8.136l-12-7a1 1 0 0 0-1.008 0l-12 7A1 1 0 0 0 3 9v14a1 1 0 0 0 .496.864l12 7a1 1 0 0 0 1.008 0l12-7A1 1 0 0 0 29 23V9a1 1 0 0 0-.496-.864zM16 3.158L26.016 9L16 14.842L5.984 9zM5 10.74l10 5.833V28.26L5 22.426zM17 28.26V16.574l10-5.833v11.685z"
+                fill="currentColor"></path>
+            </svg>
+            <span>Toggle Rendering Mode</span>
+          </button>
+          <button onclick="changeLightType()">
+            <svg style="width:24px;height:24px" xmlns="http://www.w3.org/2000/svg"
+              xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 16 16">
+              <g fill="none">
+                <path
+                  d="M7.998 2.001c-1.229 0-2.35.481-3.168 1.31c-.798.81-1.29 1.937-1.33 3.233l-.001.019v.02c.057 1.236.655 2.324 1.737 3.454l.702 2.941l.007.022c.1.297.292.544.534.717c.251.18.558.282.883.282l1.384-.004l.021-.002a1.51 1.51 0 0 0 .84-.345c.231-.194.406-.46.48-.774l.796-3.05c1.034-.994 1.618-2.144 1.618-3.437a4.318 4.318 0 0 0-1.32-3.102a4.55 4.55 0 0 0-3.183-1.284zM5.543 4.013A3.414 3.414 0 0 1 7.998 3a3.55 3.55 0 0 1 2.486 1a3.318 3.318 0 0 1 1.017 2.386c0 .991-.453 1.926-1.404 2.805l-.108.1L9.543 11H6.494l-.349-1.464l-.097-.1C5 8.372 4.548 7.48 4.499 6.557c.038-1.048.434-1.925 1.044-2.543zM6.733 12h2.55l-.165.627l-.003.013a.445.445 0 0 1-.15.24a.509.509 0 0 1-.267.115L7.361 13a.516.516 0 0 1-.3-.095a.457.457 0 0 1-.162-.206L6.732 12z"
+                  fill="currentColor"></path>
+              </g>
+            </svg>
+            <span style="flex-grow: 1; text-align:left">Change Light Type</span>
+            <span id="light">ALL</span>
+          </button>
+        </div>
+        <div class="group" style="display: flex; flex-direction: column; gap: 10px;">
+          <span>Spotlight</span>
+          <div class="slider-group">
+            Rotation X <input id="sliderXRotation" type="range" min="-2" max="2" step="0.001" value="0" />
+          </div>
+          <div class="slider-group">
+            Rotation Y <input id="sliderYRotation" type="range" min="-2" max="2" step="0.001" value="0" />
+          </div>
+          <div class="slider-group">
+            Inner Limit <input id="sliderInner" type="range" min="0" max="180" step="1" value="10" />
+          </div>
+          <div class="slider-group">
+            Outer Limit <input id="sliderOuter" type="range" min="0" max="180" step="1" value="20" />
+          </div>
+        </div>
+        <div class="group" style="display: flex; flex-direction: column; gap: 10px;">
+          <span>Camera</span>
+          <button onclick="toggleViewpoint()">
+            <svg style="width:24px;height:24px" xmlns="http://www.w3.org/2000/svg"
+              xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512">
+              <path
+                d="M255.66 112c-77.94 0-157.89 45.11-220.83 135.33a16 16 0 0 0-.27 17.77C82.92 340.8 161.8 400 255.66 400c92.84 0 173.34-59.38 221.79-135.25a16.14 16.14 0 0 0 0-17.47C428.89 172.28 347.8 112 255.66 112z"
+                fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="32">
+              </path>
+              <circle cx="256" cy="256" r="80" fill="none" stroke="currentColor" stroke-miterlimit="10"
+                stroke-width="32"></circle>
+            </svg>
+            <span>Toggle Viewpoint</span>
+          </button>
           <div class="icon-section">
             <div class="icon">
               <svg style="width:24px;height:24px" xmlns="http://www.w3.org/2000/svg"
@@ -306,21 +411,20 @@ void main() {
                   fill="currentColor"></path>
               </svg>
             </div>
-            <input id="sliderCam" type="range" min="-360" max="360" step="1" value="0" /> <span id="Cameravalue">
-            </span>
+            <input id="sliderCam" type="range" min="-360" max="360" step="1" value="0" /> <span id="Cameravalue"></span>
+
+          </div>
+          <div class="slider-group">
+            Camera X <input id="sliderCamX" type="range" min="-300" max="300" step="1" value="0" />
+          </div>
+          <div class="slider-group">
+            Camera Y <input id="sliderCamY" type="range" min="-300" max="300" step="1" value="50" />
+          </div>
+          <div class="slider-group">
+            Camera Z <input id="sliderCamZ" type="range" min="-300" max="300" step="1" value="300" />
           </div>
         </div>
-        <div class="group">
-          <span>Toggle Animation</span>
-          <button onclick="toggleAnimation()">
-            <svg style="width:24px;height:24px" xmlns="http://www.w3.org/2000/svg"
-              xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 24 24">
-              <path
-                d="M15 2c-2.71 0-5.05 1.54-6.22 3.78a7.062 7.062 0 0 0-3 3A7.014 7.014 0 0 0 2 15c0 3.87 3.13 7 7 7c2.71 0 5.05-1.54 6.22-3.78a7.062 7.062 0 0 0 3-3A7.014 7.014 0 0 0 22 9c0-3.87-3.13-7-7-7zM9 20a5.002 5.002 0 0 1-4-8c0 3.87 3.13 7 7 7c-.84.63-1.88 1-3 1zm3-3a5.002 5.002 0 0 1-4-8c0 3.86 3.13 6.99 7 7c-.84.63-1.88 1-3 1zm4.7-3.3c-.53.19-1.1.3-1.7.3c-2.76 0-5-2.24-5-5c0-.6.11-1.17.3-1.7c.53-.19 1.1-.3 1.7-.3c2.76 0 5 2.24 5 5c0 .6-.11 1.17-.3 1.7zM19 12c0-3.86-3.13-6.99-7-7a5.002 5.002 0 0 1 7 7z"
-                fill="currentColor"></path>
-            </svg>
-          </button>
-        </div>
+
 
       </div>
     </div>
